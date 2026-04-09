@@ -1,0 +1,86 @@
+{
+  "theme": "dark",
+  "archetype": "Electric & Neon / Neo-Brutalist",
+  "fonts": {
+    "heading": "Unbounded",
+    "body": "JetBrains Mono",
+    "weights": {
+      "heading": "800",
+      "body": "400",
+      "bold": "700"
+    }
+  },
+  "colors": {
+    "background": {
+      "main": "bg-zinc-950",
+      "sidebar": "bg-black",
+      "card": "bg-zinc-900",
+      "input": "bg-zinc-950"
+    },
+    "text": {
+      "primary": "text-zinc-50",
+      "secondary": "text-zinc-400",
+      "accent": "text-rose-500",
+      "warning": "text-yellow-400"
+    },
+    "border": {
+      "default": "border-zinc-800",
+      "focus": "focus:border-rose-500",
+      "accent": "border-rose-500"
+    },
+    "button": {
+      "primary": "bg-rose-600 hover:bg-rose-500 text-white",
+      "secondary": "bg-zinc-800 hover:bg-zinc-700 text-zinc-100"
+    }
+  },
+  "layout_and_spacing": {
+    "general": "Dense but high-contrast spacing. Use sharp corners `rounded-none` or `rounded-sm`. Avoid large rounded elements.",
+    "sidebar": "w-64 or w-72 flex-col fixed inset-y-0 left-0 border-r-2 border-zinc-800 bg-black z-20",
+    "chat_area": "flex-1 md:ml-64 flex flex-col h-screen",
+    "message_container": "max-w-4xl mx-auto w-full p-4 md:p-8 space-y-8 flex-1 overflow-y-auto pb-32",
+    "input_area": "fixed bottom-0 md:left-64 right-0 max-w-4xl mx-auto w-full p-4 bg-zinc-950/90 backdrop-blur"
+  },
+  "components": {
+    "chat_bubble_ai": "Border-left 4px solid Rose-500 (`border-l-4 border-rose-500 pl-4`), no background, monospace text, extremely high contrast.",
+    "chat_bubble_user": "Solid dark gray background (`bg-zinc-800/80`), slightly rounded (`rounded-sm`), right-aligned block, `px-4 py-3 max-w-[80%]`.",
+    "chat_input": "Neo-brutalist style. `border-2 border-zinc-700 focus:border-rose-500 bg-black text-white p-4 font-mono`. No rounded corners. Send button should be a sharp square with an edgy icon.",
+    "new_chat_button": "Brutalist button: `border-2 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black uppercase font-bold tracking-widest`.",
+    "auth_card": "Sharp corners, deep black background `bg-black`, neon pink accents, thick border `border-2 border-zinc-800`.",
+    "badge_savage_mode": "`bg-rose-500 text-black font-black uppercase text-xs px-2 py-1 tracking-widest` saying 'SAVAGE MODE: ON [LOCKED]' - prominently displayed in sidebar or header."
+  },
+  "motion_and_interactions": {
+    "hover": "Harsh, immediate transitions (`transition-none` or very fast `duration-75`). Hover states should violently flip colors (e.g., `text-rose-500` to `bg-rose-500 text-black`).",
+    "typing_effect": "Simulate a terminal typing effect or glitch for the AI responses.",
+    "focus": "Aggressive outline: `focus:outline-none focus:ring-0 focus:border-rose-500 focus:bg-zinc-900`."
+  },
+  "icons": {
+    "library": "@phosphor-icons/react",
+    "style": "duotone or bold, giving a mechanical/raw tech vibe."
+  },
+  "media": {
+    "login_background": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/1e633876-7148-4142-8a3d-10cb5ae62c39/images/3c01cdb28f8cc48d37d5f18595bef310b1b44066f62a49fa6164573efdfb5f57.png",
+      "description": "Dark brutalist abstract background with neon pink and cyber yellow glitch effects.",
+      "usage": "Use as the background cover image (w-1/2 or full bg) for the Login/Signup authentication page to establish the aggressive tone."
+    },
+    "ai_avatar": {
+      "url": "https://static.prod-images.emergentagent.com/jobs/1e633876-7148-4142-8a3d-10cb5ae62c39/images/a80f1ac106d58a9eef96d6d5cb0fa44a447f3c41fe6027801bd85c2e225ab8ee.png",
+      "description": "Aggressive robotic skull avatar logo in neon pink and cyan wireframe.",
+      "usage": "Use as the AI's profile picture next to its responses and in the app header/sidebar."
+    }
+  },
+  "accessibility": {
+    "contrast": "Extremely high contrast. Text on dark backgrounds must meet APCA standards.",
+    "focus_states": "All interactive elements must have visible focus rings or borders.",
+    "reduced_motion": "Respect prefers-reduced-motion for any typing or glitch animations."
+  },
+  "instructions_to_main_agent": [
+    "1. Run `yarn add @phosphor-icons/react`.",
+    "2. Use Google Fonts: `Unbounded` for Headings and `JetBrains Mono` for Body.",
+    "3. Enforce Tailwind's `zinc` palette (`bg-zinc-950`, `bg-zinc-900`, `border-zinc-800`). Avoid using slate or gray.",
+    "4. Strip standard Shadcn softness: force `rounded-none` or `rounded-sm` on Buttons, Inputs, Cards, and Dialogs.",
+    "5. For Chat Interface: Create a ChatGPT-like layout with a fixed sidebar (left) and main chat area. Chat messages should be clearly distinguishable (User = solid gray block right-aligned; AI = left-aligned, border-left pink, monospace font).",
+    "6. Ensure the text 'SAVAGE MODE: ON [LOCKED]' is clearly visible in the UI, enforcing the user requirement.",
+    "7. Include `data-testid` on all buttons, links, inputs, and major containers."
+  ]
+}
