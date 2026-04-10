@@ -34,8 +34,8 @@ code {
         --card-foreground: 0 0% 98%;
         --popover: 240 6% 6%;
         --popover-foreground: 0 0% 98%;
-        --primary: 346.8 77.2% 49.8%;
-        --primary-foreground: 0 0% 98%;
+        --primary: 38 92% 50%;
+        --primary-foreground: 0 0% 5%;
         --secondary: 240 3.7% 15.9%;
         --secondary-foreground: 0 0% 98%;
         --muted: 240 3.7% 15.9%;
@@ -46,7 +46,7 @@ code {
         --destructive-foreground: 0 0% 98%;
         --border: 240 3.7% 15.9%;
         --input: 240 3.7% 15.9%;
-        --ring: 346.8 77.2% 49.8%;
+        --ring: 38 92% 50%;
         --chart-1: 220 70% 50%;
         --chart-2: 160 60% 45%;
         --chart-3: 30 80% 55%;
@@ -77,19 +77,19 @@ code {
     border-radius: 0;
 }
 ::-webkit-scrollbar-thumb:hover {
-    background: #f43f5e;
+    background: #f59e0b;
 }
 
 /* Selection color */
 ::selection {
-    background: #f43f5e;
+    background: #f59e0b;
     color: #000;
 }
 
 /* Typing animation */
 @keyframes blink-caret {
     from, to { border-color: transparent; }
-    50% { border-color: #f43f5e; }
+    50% { border-color: #f59e0b; }
 }
 
 @keyframes fadeInUp {
@@ -108,8 +108,8 @@ code {
 }
 
 @keyframes pulse-glow {
-    0%, 100% { box-shadow: 0 0 0 0 rgba(244, 63, 94, 0); }
-    50% { box-shadow: 0 0 20px 4px rgba(244, 63, 94, 0.3); }
+    0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0); }
+    50% { box-shadow: 0 0 20px 4px rgba(245, 158, 11, 0.3); }
 }
 
 .pulse-glow {
@@ -118,11 +118,11 @@ code {
 
 /* Glitch text effect */
 @keyframes glitch {
-    0% { text-shadow: 2px 0 #f43f5e, -2px 0 #eab308; }
-    25% { text-shadow: -2px 0 #f43f5e, 2px 0 #eab308; }
-    50% { text-shadow: 2px 2px #f43f5e, -2px -2px #eab308; }
-    75% { text-shadow: -2px 2px #f43f5e, 2px -2px #eab308; }
-    100% { text-shadow: 2px 0 #f43f5e, -2px 0 #eab308; }
+    0% { text-shadow: 2px 0 #f59e0b, -2px 0 #f43f5e; }
+    25% { text-shadow: -2px 0 #f59e0b, 2px 0 #f43f5e; }
+    50% { text-shadow: 2px 2px #f59e0b, -2px -2px #f43f5e; }
+    75% { text-shadow: -2px 2px #f59e0b, 2px -2px #f43f5e; }
+    100% { text-shadow: 2px 0 #f59e0b, -2px 0 #f43f5e; }
 }
 
 .glitch-text {

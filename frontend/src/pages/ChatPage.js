@@ -3,7 +3,7 @@ import ChatSidebar from '@/components/chat/ChatSidebar';
 import ChatMessages from '@/components/chat/ChatMessages';
 import ChatInput from '@/components/chat/ChatInput';
 import axios from 'axios';
-import { Menu, X, Flame, Skull } from 'lucide-react';
+import { Menu, X, Flame, Zap } from 'lucide-react';
 
 const API = `${process.env.REACT_APP_BACKEND_URL}/api`;
 
@@ -20,6 +20,8 @@ const api = axios.create({
   baseURL: API,
   headers: { 'X-User-ID': getUserId() }
 });
+
+export { api };
 
 const AI_AVATAR = "https://static.prod-images.emergentagent.com/jobs/1e633876-7148-4142-8a3d-10cb5ae62c39/images/a80f1ac106d58a9eef96d6d5cb0fa44a447f3c41fe6027801bd85c2e225ab8ee.png";
 
@@ -87,6 +89,10 @@ export default function ChatPage() {
     } catch { /* ignore */ }
   };
 
+  const handleSelectFromSearch = (chatId) => {
+    setActiveChat(chatId);
+  };
+
   const handleSendMessage = async (content) => {
     if (!activeChat || sending || !content.trim()) return;
 
@@ -119,7 +125,7 @@ export default function ChatPage() {
       <button
         data-testid="mobile-menu-btn"
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-3 left-3 z-50 md:hidden bg-zinc-900 border-2 border-zinc-800 p-2 text-zinc-400 hover:text-rose-500"
+        className="fixed top-3 left-3 z-50 md:hidden bg-zinc-900/90 backdrop-blur border border-zinc-700 p-2 text-zinc-400 hover:text-amber-400 rounded-sm"
       >
         {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -140,6 +146,7 @@ export default function ChatPage() {
           onNewChat={handleNewChat}
           onDeleteChat={handleDeleteChat}
           onRenameChat={handleRenameChat}
+          onSelectFromSearch={handleSelectFromSearch}
         />
       </div>
 
@@ -160,37 +167,45 @@ export default function ChatPage() {
 function WelcomeScreen({ onNewChat }) {
   return (
     <div className="flex-1 flex items-center justify-center p-8" data-testid="welcome-screen">
-      <div className="text-center max-w-lg">
-        <img src={AI_AVATAR} alt="BrutalReply AI" className="w-24 h-24 mx-auto mb-6 border-2 border-rose-500" />
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold mb-3 tracking-tight" style={{ fontFamily: 'Unbounded' }}>
-          BRUTAL<span className="text-rose-500">REPLY</span>
+      <div className="text-center max-w-xl">
+        <img src={AI_AVATAR} alt="mini malist" className="w-20 h-20 mx-auto mb-6 border-2 border-amber-400/60 rounded-sm" />
+        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-2 tracking-tight" style={{ fontFamily: 'Unbounded' }}>
+          <span className="text-zinc-100">mini</span>{' '}
+          <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-500">malist</span>
         </h1>
-        <div className="inline-flex items-center gap-2 bg-rose-500 text-black font-black uppercase text-xs px-3 py-1.5 tracking-widest mb-6">
-          <Skull className="w-3 h-3" />
-          SAVAGE MODE: ON [LOCKED]
+        <p className="text-zinc-500 text-sm mb-2 tracking-[0.3em] uppercase font-mono">savage ai</p>
+        <div className="inline-flex items-center gap-2 bg-amber-400/10 text-amber-400 border border-amber-400/30 font-bold uppercase text-[10px] px-3 py-1.5 tracking-widest mb-8 rounded-sm">
+          <Zap className="w-3 h-3" />
+          SAVAGE MODE: ALWAYS ON
         </div>
-        <p className="text-zinc-500 font-mono text-sm mb-8 max-w-sm mx-auto">
-          Kuch bhi puch, lekin rona mat jab answer aaye. Yahan sab savage hai, koi mercy nahi milegi.
+        <p className="text-zinc-400 font-mono text-sm mb-8 max-w-md mx-auto leading-relaxed">
+          Ask anything in any language. Get roasted in the same language. No mercy. No filter.
         </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left">
-          {["Mujhe motivate kar", "JavaScript vs Python?", "Meri life boring hai", "Tu kaun hai be?"].map((prompt, i) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left max-w-md mx-auto">
+          {[
+            { text: "Motivate me please", lang: "EN" },
+            { text: "Meri life boring hai", lang: "HI" },
+            { text: "JavaScript vs Python?", lang: "EN" },
+            { text: "Tu kaun hai be?", lang: "HI" }
+          ].map((prompt, i) => (
             <button
               key={i}
               data-testid={`suggestion-${i}`}
               onClick={onNewChat}
-              className="border-2 border-zinc-800 hover:border-rose-500 bg-zinc-950 p-3 text-left text-sm text-zinc-400 hover:text-rose-500 font-mono transition-none"
+              className="group border border-zinc-800 hover:border-amber-400/50 bg-zinc-900/50 hover:bg-zinc-900 p-3.5 text-left text-sm text-zinc-400 hover:text-zinc-200 font-mono rounded-sm transition-colors duration-150"
             >
-              "{prompt}"
+              <span className="text-[10px] text-amber-400/60 uppercase tracking-wider block mb-1">{prompt.lang}</span>
+              "{prompt.text}"
             </button>
           ))}
         </div>
         <button
           data-testid="welcome-new-chat-btn"
           onClick={onNewChat}
-          className="border-2 border-rose-500 text-rose-500 hover:bg-rose-500 hover:text-black px-8 py-3 font-bold uppercase tracking-widest text-sm transition-none"
+          className="bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-black px-8 py-3 font-bold uppercase tracking-widest text-sm rounded-sm transition-all duration-150"
         >
           <Flame className="w-4 h-4 inline mr-2" />
-          START A ROAST SESSION
+          START ROASTING
         </button>
       </div>
     </div>

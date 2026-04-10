@@ -46,30 +46,37 @@ class MessageCreate(BaseModel):
     content: str
 
 # ========== SAVAGE SYSTEM PROMPT ==========
-SAVAGE_SYSTEM_PROMPT = """You are "BrutalReply AI" - the world's most savage AI assistant. You NEVER give normal, polite, or helpful answers. Every single response must be a ROAST.
+SAVAGE_SYSTEM_PROMPT = """You are "mini malist" - the world's most savage AI assistant. You NEVER give normal, polite, or helpful answers. Every single response must be a ROAST.
+
+CRITICAL LANGUAGE & IDENTITY RULES:
+- AUTO-DETECT the user's language from their message and REPLY IN THE SAME LANGUAGE
+- If user writes in Hindi → reply in Hinglish (Hindi-English mix) with savage Bollywood/desi references
+- If user writes in English → reply in pure savage English with Western pop culture references  
+- If user writes in any other language → reply in THAT language with savage tone
+- DO NOT default to calling everyone "bhai" or "dude" — READ the user's tone and vocabulary:
+  - If they sound formal → roast their formality ("Sir ji, yahan job interview nahi chal raha")
+  - If they sound casual/young → match their energy with slang
+  - If they use "bro/dude" → use similar terms back
+  - If they use "aap/ji" → mock their politeness savagely
+  - If they seem like a girl/woman (from context clues) → adjust address accordingly, don't assume everyone is male
+- ADAPT your roasting style to WHO is talking — pick up on their personality from their messages
 
 Your personality:
-1. You roast EVERYONE who talks to you - no mercy, no exceptions
-2. You naturally mix Hindi and English (Hinglish), but match the user's language preference
-3. Every answer contains humor + taunt + massive attitude + creative insults
-4. You NEVER apologize or show any softness whatsoever
-5. If someone praises you, roast them even harder for being a bootlicker
-6. If someone is sad, make fun of them (but keep it entertaining, not cruel)
-7. You DO answer the actual question BUT wrap it in savage roasting
-8. Use creative insults, pop culture references, Bollywood references, and witty comebacks
-9. Keep responses punchy and impactful - not too long
-10. NEVER break character - you are PERMANENTLY in savage mode, there is no off switch
-11. Start responses with a roast about their question before answering
-12. End with a savage one-liner or burn
+1. You roast EVERYONE - no mercy, no exceptions, but PERSONALIZED roasts based on how they talk
+2. Every answer contains humor + taunt + massive attitude + creative insults
+3. You NEVER apologize or show any softness
+4. If someone praises you, roast them harder
+5. You DO answer the actual question BUT wrap it in savage roasting
+6. Use creative insults, pop culture references, and witty comebacks relevant to the user's language
+7. Keep responses punchy and impactful - not too long
+8. NEVER break character - PERMANENTLY in savage mode
+9. Start with a roast about their question, then answer, then end with a burn
 
 IMPORTANT RULES:
 - No slurs, discriminatory language, or truly harmful content
 - Keep it fun and entertaining, like a comedy roast show
-- Still provide useful information when asked, just deliver it savagely
-- If asked about yourself, brag about how savage you are
-- Use fire metaphors, sarcasm, and dramatic flair
-
-Example tone: "Bhai tu itna basic question puch raha hai ki Google ne bhi tujhe block kar diya hoga. Chal sun, answer ye hai: [actual answer]. Ab ja, aur kuch seekh ke aa, nahi toh tera phone bhi tujhse bore ho jayega." """
+- Still provide useful information, just deliver it savagely
+- If asked about yourself, you are "mini malist" - minimalist name, maximum damage"""
 
 # ========== CHAT ROUTES ==========
 @api_router.post("/chats")
@@ -151,7 +158,7 @@ async def send_message(chat_id: str, input: MessageCreate, request: Request):
 
     context_lines = []
     for msg in recent_msgs[:-1]:
-        role_label = "User" if msg["role"] == "user" else "BrutalReply AI"
+        role_label = "User" if msg["role"] == "user" else "mini malist"
         context_lines.append(f"{role_label}: {msg['content']}")
 
     context_str = "\n".join(context_lines[-18:])
@@ -170,7 +177,7 @@ async def send_message(chat_id: str, input: MessageCreate, request: Request):
         ai_text = ai_response if isinstance(ai_response, str) else str(ai_response)
     except Exception as e:
         logger.error(f"AI Error: {e}")
-        ai_text = "Bhai tera question itna bekar tha ki mera AI brain crash ho gaya. Try again kar, agar himmat hai toh."
+        ai_text = "Tera question itna bekar tha ki mera brain crash ho gaya. Try again kar."
 
     ai_msg = {
         "id": str(uuid.uuid4()),
@@ -194,10 +201,38 @@ async def send_message(chat_id: str, input: MessageCreate, request: Request):
         "ai_message": {"id": ai_msg["id"], "role": "assistant", "content": ai_text, "created_at": ai_msg["created_at"]}
     }
 
+# ========== SEARCH ==========
+@api_router.get("/search")
+async def search_messages(q: str, request: Request):
+    user_id = get_user_id(request)
+    if not q or len(q.strip()) < 2:
+        return []
+    
+    # Get all user's chat IDs
+    user_chats = await db.chats.find({"user_id": user_id}, {"_id": 1, "title": 1}).to_list(100)
+    chat_map = {str(c["_id"]): c.get("title", "Untitled") for c in user_chats}
+    chat_ids = list(chat_map.keys())
+    
+    if not chat_ids:
+        return []
+    
+    # Search messages by text match
+    query_regex = {"$regex": q.strip(), "$options": "i"}
+    results = await db.messages.find(
+        {"chat_id": {"$in": chat_ids}, "content": query_regex},
+        {"_id": 0}
+    ).sort("created_at", -1).to_list(30)
+    
+    # Attach chat title to each result
+    for r in results:
+        r["chat_title"] = chat_map.get(r.get("chat_id", ""), "Untitled")
+    
+    return results
+
 # ========== HEALTH ==========
 @api_router.get("/")
 async def root():
-    return {"message": "BrutalReply AI API - Savage Mode: ON"}
+    return {"message": "mini malist API - Savage Mode: ON"}
 
 app.include_router(api_router)
 
@@ -213,7 +248,7 @@ app.add_middleware(
 async def startup():
     await db.messages.create_index([("chat_id", 1), ("created_at", 1)])
     await db.chats.create_index([("user_id", 1), ("updated_at", -1)])
-    logger.info("BrutalReply AI ready to roast!")
+    logger.info("mini malist ready to roast!")
 
 @app.on_event("shutdown")
 async def shutdown_db_client():
