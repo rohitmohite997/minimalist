@@ -1,50 +1,30 @@
-# BrutalReply AI - Product Requirements Document
+# mini malist - Savage AI Chatbot
 
 ## Original Problem Statement
-Build a fully powered AI chatbot like ChatGPT where all answers are savage/roast style. User asks anything and gets roasted instead of normal answers.
-
-## User Choices
-- AI Model: OpenAI GPT-5.2 (via emergentintegrations)
-- Chat History: Multiple chats with sidebar (ChatGPT-like)
-- Authentication: None (removed per user request)
-- Roast Level: Always full savage mode (no customization)
-- Theme: Dark neo-brutalist
+Build a savage roast AI chatbot. Renamed to "mini malist". Auto-detect user language, respond in same language. Multi-language support. Better dark theme with more color accents.
 
 ## Architecture
 - **Backend**: FastAPI + MongoDB + emergentintegrations (GPT-5.2)
 - **Frontend**: React + Tailwind + shadcn/ui
-- **Database**: MongoDB (chats, messages collections)
-- **User Identification**: Anonymous via localStorage UUID + X-User-ID header
+- **User ID**: Anonymous via localStorage UUID + X-User-ID header
 
 ## What's Been Implemented (April 2026)
-- [x] Savage AI chatbot with GPT-5.2 integration
+- [x] Renamed to "mini malist" (from BrutalReply)
+- [x] AI auto-detects language (Hindi→Hinglish, English→English, etc.)
+- [x] AI adapts tone per user (not default "bhai" to everyone)
+- [x] Message search across all chats (GET /api/search?q=)
+- [x] Improved dark theme with amber/gold accents, better contrast
 - [x] Multiple chat history with sidebar
 - [x] Create, rename, delete chats
-- [x] Send messages and get savage AI responses
-- [x] Dark neo-brutalist UI (Unbounded + JetBrains Mono fonts)
 - [x] Typewriter effect for AI responses
 - [x] Mobile responsive layout
-- [x] Welcome screen with suggestion prompts
-- [x] Anonymous user system (no auth)
-
-## Core Requirements
-1. All AI responses must be savage/roast style
-2. ChatGPT-like interface with sidebar
-3. Chat history persistence per user
-4. Dark theme with aggressive styling
-
-## P0 (Done)
-- Chat creation and messaging
-- AI savage responses
-- Chat history sidebar
-- Mobile responsive
+- [x] Welcome screen with multi-language suggestion prompts
 
 ## P1 (Backlog)
-- Message search across chats
 - Chat export/share functionality
-- Custom roast intensity levels
+- Voice input support
+- Markdown rendering in AI responses
 
 ## P2 (Future)
-- Voice input support
 - Image-based roasting
-- Roast of the day feature
+- Roast leaderboard
