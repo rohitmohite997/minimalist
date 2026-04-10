@@ -2,6 +2,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import ChatSidebar from '@/components/chat/ChatSidebar';
 import ChatMessages from '@/components/chat/ChatMessages';
 import ChatInput from '@/components/chat/ChatInput';
+import NamePrompt from '@/components/chat/NamePrompt';
 import axios from 'axios';
 import { Menu, X, Flame, Zap } from 'lucide-react';
 
@@ -32,6 +33,23 @@ export default function ChatPage() {
   const [sending, setSending] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [loadingMessages, setLoadingMessages] = useState(false);
+  const [userName, setUserName] = useState(() => localStorage.getItem('mini_malist_name') || '');
+  const [showNamePrompt, setShowNamePrompt] = useState(() => !localStorage.getItem('mini_malist_name'));
+  const [intensity, setIntensity] = useState(() => {
+    const saved = localStorage.getItem('mini_malist_intensity');
+    return saved ? parseInt(saved) : 3;
+  });
+
+  const handleNameSave = (name) => {
+    setUserName(name);
+    localStorage.setItem('mini_malist_name', name);
+    setShowNamePrompt(false);
+  };
+
+  const handleIntensityChange = (val) => {
+    setIntensity(val);
+    localStorage.setItem('mini_malist_intensity', val.toString());
+  };
 
   const fetchChats = useCallback(async () => {
     try {
@@ -106,7 +124,11 @@ export default function ChatPage() {
     setSending(true);
 
     try {
-      const { data } = await api.post(`/chats/${activeChat}/messages`, { content: content.trim() });
+      const { data } = await api.post(`/chats/${activeChat}/messages`, {
+        content: content.trim(),
+        user_name: userName || null,
+        intensity: intensity
+      });
       setMessages(prev => {
         const without = prev.filter(m => m.id !== tempUserMsg.id);
         return [...without, data.user_message, data.ai_message];
@@ -120,51 +142,58 @@ export default function ChatPage() {
   };
 
   return (
-    <div className="flex h-screen bg-zinc-950 overflow-hidden" data-testid="chat-page">
-      {/* Mobile menu button */}
-      <button
-        data-testid="mobile-menu-btn"
-        onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="fixed top-3 left-3 z-50 md:hidden bg-zinc-900/90 backdrop-blur border border-zinc-700 p-2 text-zinc-400 hover:text-amber-400 rounded-sm"
-      >
-        {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-      </button>
+    <>
+      {showNamePrompt && <NamePrompt onSave={handleNameSave} onSkip={() => setShowNamePrompt(false)} />}
+      <div className="flex h-screen bg-zinc-950 overflow-hidden" data-testid="chat-page">
+        {/* Mobile menu button */}
+        <button
+          data-testid="mobile-menu-btn"
+          onClick={() => setSidebarOpen(!sidebarOpen)}
+          className="fixed top-3 left-3 z-50 md:hidden bg-zinc-900/90 backdrop-blur border border-zinc-700 p-2 text-zinc-400 hover:text-amber-400 rounded-sm"
+        >
+          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        </button>
 
-      {sidebarOpen && (
-        <div className="fixed inset-0 bg-black/70 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />
-      )}
-
-      <div className={`
-        fixed inset-y-0 left-0 z-40 w-72 transform transition-transform duration-200
-        md:relative md:translate-x-0
-        ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-      `}>
-        <ChatSidebar
-          chats={chats}
-          activeChat={activeChat}
-          onSelectChat={setActiveChat}
-          onNewChat={handleNewChat}
-          onDeleteChat={handleDeleteChat}
-          onRenameChat={handleRenameChat}
-          onSelectFromSearch={handleSelectFromSearch}
-        />
-      </div>
-
-      <div className="flex-1 flex flex-col min-w-0">
-        {activeChat ? (
-          <>
-            <ChatMessages messages={messages} sending={sending} loading={loadingMessages} />
-            <ChatInput onSend={handleSendMessage} sending={sending} />
-          </>
-        ) : (
-          <WelcomeScreen onNewChat={handleNewChat} />
+        {sidebarOpen && (
+          <div className="fixed inset-0 bg-black/70 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />
         )}
+
+        <div className={`
+          fixed inset-y-0 left-0 z-40 w-72 transform transition-transform duration-200
+          md:relative md:translate-x-0
+          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
+        `}>
+          <ChatSidebar
+            chats={chats}
+            activeChat={activeChat}
+            onSelectChat={setActiveChat}
+            onNewChat={handleNewChat}
+            onDeleteChat={handleDeleteChat}
+            onRenameChat={handleRenameChat}
+            onSelectFromSearch={handleSelectFromSearch}
+            intensity={intensity}
+            onIntensityChange={handleIntensityChange}
+            userName={userName}
+            onEditName={() => setShowNamePrompt(true)}
+          />
+        </div>
+
+        <div className="flex-1 flex flex-col min-w-0">
+          {activeChat ? (
+            <>
+              <ChatMessages messages={messages} sending={sending} loading={loadingMessages} />
+              <ChatInput onSend={handleSendMessage} sending={sending} />
+            </>
+          ) : (
+            <WelcomeScreen onNewChat={handleNewChat} userName={userName} />
+          )}
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
-function WelcomeScreen({ onNewChat }) {
+function WelcomeScreen({ onNewChat, userName }) {
   return (
     <div className="flex-1 flex items-center justify-center p-8" data-testid="welcome-screen">
       <div className="text-center max-w-xl">
@@ -174,10 +203,15 @@ function WelcomeScreen({ onNewChat }) {
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-500">malist</span>
         </h1>
         <p className="text-zinc-500 text-sm mb-2 tracking-[0.3em] uppercase font-mono">savage ai</p>
-        <div className="inline-flex items-center gap-2 bg-amber-400/10 text-amber-400 border border-amber-400/30 font-bold uppercase text-[10px] px-3 py-1.5 tracking-widest mb-8 rounded-sm">
+        <div className="inline-flex items-center gap-2 bg-amber-400/10 text-amber-400 border border-amber-400/30 font-bold uppercase text-[10px] px-3 py-1.5 tracking-widest mb-6 rounded-sm">
           <Zap className="w-3 h-3" />
           SAVAGE MODE: ALWAYS ON
         </div>
+        {userName && (
+          <p className="text-amber-400/80 font-mono text-sm mb-4">
+            Ready to roast you, <span className="text-amber-300 font-bold">{userName}</span>
+          </p>
+        )}
         <p className="text-zinc-400 font-mono text-sm mb-8 max-w-md mx-auto leading-relaxed">
           Ask anything in any language. Get roasted in the same language. No mercy. No filter.
         </p>

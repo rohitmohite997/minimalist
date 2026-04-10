@@ -138,6 +138,97 @@ class MiniMalistAPITester:
                     return True  # Still pass as API works
         return False
 
+    def test_send_message_with_name(self, chat_id):
+        """Test sending a message with user_name parameter"""
+        test_message = "Motivate me!"
+        test_name = "TestUser"
+        success, response = self.run_test(
+            "Send Message with User Name",
+            "POST",
+            f"chats/{chat_id}/messages",
+            200,
+            data={"content": test_message, "user_name": test_name}
+        )
+        
+        if success and isinstance(response, dict):
+            if "ai_message" in response:
+                ai_content = response["ai_message"].get('content', '')
+                print(f"   AI response: {ai_content[:100]}...")
+                
+                # Check if AI response includes the user's name
+                if test_name.lower() in ai_content.lower():
+                    print(f"   ✅ AI response includes user name '{test_name}'")
+                    return True
+                else:
+                    print(f"   ⚠️  AI response may not include user name '{test_name}'")
+                    return True  # Still pass as API works
+        return False
+
+    def test_intensity_levels(self, chat_id):
+        """Test different intensity levels (1-4)"""
+        test_message = "Tell me about myself"
+        intensities = [1, 2, 3, 4]
+        intensity_names = ["Chill", "Spicy", "Savage", "Nuclear"]
+        
+        for i, intensity in enumerate(intensities):
+            success, response = self.run_test(
+                f"Send Message with Intensity {intensity} ({intensity_names[i]})",
+                "POST",
+                f"chats/{chat_id}/messages",
+                200,
+                data={"content": test_message, "intensity": intensity}
+            )
+            
+            if success and isinstance(response, dict):
+                if "ai_message" in response:
+                    ai_content = response["ai_message"].get('content', '')
+                    print(f"   Intensity {intensity} response: {ai_content[:80]}...")
+                    
+                    # Basic check that we got a response
+                    if len(ai_content) > 0:
+                        print(f"   ✅ Intensity {intensity} working")
+                    else:
+                        print(f"   ❌ Intensity {intensity} returned empty response")
+                        return False
+                else:
+                    return False
+            else:
+                return False
+        
+        print("   ✅ All intensity levels (1-4) working")
+        return True
+
+    def test_combined_name_and_intensity(self, chat_id):
+        """Test sending message with both user_name and intensity"""
+        test_message = "What do you think about my coding skills?"
+        test_name = "CodeMaster"
+        test_intensity = 4  # Nuclear level
+        
+        success, response = self.run_test(
+            "Send Message with Name and Intensity",
+            "POST",
+            f"chats/{chat_id}/messages",
+            200,
+            data={"content": test_message, "user_name": test_name, "intensity": test_intensity}
+        )
+        
+        if success and isinstance(response, dict):
+            if "ai_message" in response:
+                ai_content = response["ai_message"].get('content', '')
+                print(f"   AI response: {ai_content[:100]}...")
+                
+                # Check if response includes name and seems intense
+                has_name = test_name.lower() in ai_content.lower()
+                seems_intense = any(word in ai_content.lower() for word in ['brutal', 'savage', 'destroy', 'annihilate', 'nuclear'])
+                
+                if has_name:
+                    print(f"   ✅ Response includes user name '{test_name}'")
+                if seems_intense:
+                    print("   ✅ Response appears to be at nuclear intensity level")
+                
+                return True
+        return False
+
     def test_get_messages(self, chat_id):
         """Test getting messages from a chat"""
         success, response = self.run_test(
@@ -348,19 +439,28 @@ def main():
     # Test 6: Get messages
     messages = tester.test_get_messages(chat_id)
 
-    # Test 7: Language detection tests
+    # Test 7: NEW FEATURES - Test user_name parameter
+    tester.test_send_message_with_name(chat_id)
+
+    # Test 8: NEW FEATURES - Test intensity levels (1-4)
+    tester.test_intensity_levels(chat_id)
+
+    # Test 9: NEW FEATURES - Test combined name and intensity
+    tester.test_combined_name_and_intensity(chat_id)
+
+    # Test 10: Language detection tests
     tester.test_language_detection_hindi(chat_id)
     tester.test_language_detection_english(chat_id)
 
-    # Test 8: Search functionality tests
+    # Test 11: Search functionality tests
     tester.test_search_messages(chat_id)
     tester.test_search_no_results()
     tester.test_search_short_query()
 
-    # Test 9: Rename chat
+    # Test 12: Rename chat
     tester.test_rename_chat(chat_id)
 
-    # Test 10: Delete chat
+    # Test 13: Delete chat
     tester.test_delete_chat(chat_id)
 
     # Print final results

@@ -1,7 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Zap } from 'lucide-react';
+import { Zap, Share2, Check, Copy } from 'lucide-react';
+import { toast } from 'sonner';
 
 const AI_AVATAR = "https://static.prod-images.emergentagent.com/jobs/1e633876-7148-4142-8a3d-10cb5ae62c39/images/a80f1ac106d58a9eef96d6d5cb0fa44a447f3c41fe6027801bd85c2e225ab8ee.png";
+const APP_URL = window.location.origin;
 
 function TypingIndicator() {
   return (
@@ -48,6 +50,45 @@ function TypewriterText({ text }) {
   );
 }
 
+function ShareButton({ content }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleShare = async () => {
+    const shareText = `mini malist just roasted me:\n\n"${content}"\n\nGet roasted at ${APP_URL}`;
+
+    // Try native share first (mobile)
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'mini malist - Savage AI', text: shareText });
+        return;
+      } catch {
+        // Fallback to clipboard
+      }
+    }
+
+    // Copy to clipboard
+    try {
+      await navigator.clipboard.writeText(shareText);
+      setCopied(true);
+      toast.success('Roast copied! Share it everywhere.');
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      toast.error('Could not copy to clipboard');
+    }
+  };
+
+  return (
+    <button
+      data-testid="share-btn"
+      onClick={handleShare}
+      className="opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-amber-400 p-1 transition-all duration-150"
+      title="Share this roast"
+    >
+      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+    </button>
+  );
+}
+
 function MessageBubble({ message, isLatestAI }) {
   const isUser = message.role === 'user';
 
@@ -62,12 +103,15 @@ function MessageBubble({ message, isLatestAI }) {
   }
 
   return (
-    <div className="flex items-start gap-3 animate-fade-in-up" data-testid={`message-${message.id}`}>
+    <div className="group flex items-start gap-3 animate-fade-in-up" data-testid={`message-${message.id}`}>
       <img src={AI_AVATAR} alt="AI" className="w-8 h-8 border border-amber-400/40 shrink-0 mt-1 rounded-sm" />
-      <div className="border-l-2 border-amber-400 pl-4 py-1 max-w-[85%]">
+      <div className="border-l-2 border-amber-400 pl-4 py-1 max-w-[85%] flex-1">
         <p className="text-zinc-200 text-sm font-mono whitespace-pre-wrap leading-relaxed">
           {isLatestAI ? <TypewriterText text={message.content} /> : message.content}
         </p>
+      </div>
+      <div className="shrink-0 mt-1">
+        <ShareButton content={message.content} />
       </div>
     </div>
   );
