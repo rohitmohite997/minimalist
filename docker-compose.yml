@@ -1,0 +1,63 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: mini_malist_mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: password
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - mini_malist_network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh localhost:27017/test --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: mini_malist_backend
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGO_URL=mongodb://admin:password@mongodb:27017
+      - DB_NAME=mini_malist
+      - EMERGENT_LLM_KEY=${EMERGENT_LLM_KEY}
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - CORS_ORIGINS=http://localhost:3000,http://127.0.0.1:3000
+      - RATE_LIMIT_ENABLED=true
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - mini_malist_network
+    command: uvicorn server:app --host 0.0.0.0 --port 8000 --reload
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: mini_malist_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - REACT_APP_BACKEND_URL=http://localhost:8000
+    depends_on:
+      - backend
+    networks:
+      - mini_malist_network
+
+volumes:
+  mongodb_data:
+
+networks:
+  mini_malist_network:
+    driver: bridge

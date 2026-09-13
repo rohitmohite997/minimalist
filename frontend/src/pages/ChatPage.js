@@ -55,7 +55,10 @@ export default function ChatPage() {
     try {
       const { data } = await api.get('/chats');
       setChats(data);
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('Failed to fetch chats:', err);
+      // Don't show toast for initial load, just log
+    }
   }, []);
 
   const fetchMessages = useCallback(async (chatId) => {
@@ -63,7 +66,8 @@ export default function ChatPage() {
     try {
       const { data } = await api.get(`/chats/${chatId}/messages`);
       setMessages(data);
-    } catch {
+    } catch (err) {
+      console.error('Failed to fetch messages:', err);
       setMessages([]);
     } finally {
       setLoadingMessages(false);
@@ -86,7 +90,9 @@ export default function ChatPage() {
       setActiveChat(data.id);
       setMessages([]);
       setSidebarOpen(false);
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('Failed to create chat:', err);
+    }
   };
 
   const handleDeleteChat = async (chatId) => {
@@ -97,14 +103,18 @@ export default function ChatPage() {
         setActiveChat(null);
         setMessages([]);
       }
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('Failed to delete chat:', err);
+    }
   };
 
   const handleRenameChat = async (chatId, newTitle) => {
     try {
       await api.put(`/chats/${chatId}`, { title: newTitle });
       setChats(prev => prev.map(c => c.id === chatId ? { ...c, title: newTitle } : c));
-    } catch { /* ignore */ }
+    } catch (err) {
+      console.error('Failed to rename chat:', err);
+    }
   };
 
   const handleSelectFromSearch = (chatId) => {
@@ -134,7 +144,8 @@ export default function ChatPage() {
         return [...without, data.user_message, data.ai_message];
       });
       fetchChats();
-    } catch {
+    } catch (err) {
+      console.error('Failed to send message:', err);
       setMessages(prev => prev.filter(m => m.id !== tempUserMsg.id));
     } finally {
       setSending(false);

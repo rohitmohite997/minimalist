@@ -57,7 +57,8 @@ export default function ChatSidebar({ chats, activeChat, onSelectChat, onNewChat
       try {
         const { data } = await api.get(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
         setSearchResults(data);
-      } catch {
+      } catch (err) {
+        console.error('Search failed:', err);
         setSearchResults([]);
       } finally {
         setSearching(false);

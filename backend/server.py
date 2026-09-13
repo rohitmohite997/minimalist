@@ -8,14 +8,28 @@ from fastapi import FastAPI, APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from bson import ObjectId
+from bson import ObjectId, InvalidId
 import os
 import logging
 import uuid
+import re
 from datetime import datetime, timezone
-from pydantic import BaseModel
+from pydantic import BaseModel, Field, validator
 from typing import Optional
 from emergentintegrations.llm.chat import LlmChat, UserMessage
+
+# ========== ENV VALIDATION ==========
+def validate_env_vars():
+    """Validate all required environment variables on startup"""
+    required_vars = ['MONGO_URL', 'DB_NAME', 'EMERGENT_LLM_KEY']
+    missing = [var for var in required_vars if not os.environ.get(var)]
+    if missing:
+        error_msg = f"Missing required environment variables: {', '.join(missing)}. Please set them in .env file."
+        logger.error(error_msg)
+        raise RuntimeError(error_msg)
+    logger.info("✓ All required environment variables configured")
+
+validate_env_vars()
 
 # MongoDB connection
 mongo_url = os.environ['MONGO_URL']
@@ -40,12 +54,20 @@ class ChatCreate(BaseModel):
     title: Optional[str] = "New Chat"
 
 class ChatRename(BaseModel):
-    title: str
+    title: str = Field(..., min_length=1, max_length=200)
 
 class MessageCreate(BaseModel):
-    content: str
-    user_name: Optional[str] = None
+    content: str = Field(..., min_length=1, max_length=5000)
+    user_name: Optional[str] = Field(None, max_length=100)
     intensity: Optional[int] = 3
+    
+    @validator('intensity')
+    def validate_intensity(cls, v):
+        if v is None:
+            return 3
+        if not isinstance(v, int) or v < 1 or v > 4:
+            raise ValueError('Intensity must be between 1 and 4')
+        return v
 
 # ========== SAVAGE SYSTEM PROMPT ==========
 INTENSITY_PROMPTS = {
@@ -106,7 +128,10 @@ async def list_chats(request: Request):
 @api_router.get("/chats/{chat_id}")
 async def get_chat(chat_id: str, request: Request):
     user_id = get_user_id(request)
-    chat = await db.chats.find_one({"_id": ObjectId(chat_id), "user_id": user_id})
+    try:
+        chat = await db.chats.find_one({"_id": ObjectId(chat_id), "user_id": user_id})
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     return {"id": str(chat["_id"]), "title": chat.get("title", "New Chat"), "created_at": chat.get("created_at", ""), "updated_at": chat.get("updated_at", "")}
@@ -114,10 +139,13 @@ async def get_chat(chat_id: str, request: Request):
 @api_router.put("/chats/{chat_id}")
 async def rename_chat(chat_id: str, input: ChatRename, request: Request):
     user_id = get_user_id(request)
-    result = await db.chats.update_one(
-        {"_id": ObjectId(chat_id), "user_id": user_id},
-        {"$set": {"title": input.title, "updated_at": datetime.now(timezone.utc).isoformat()}}
-    )
+    try:
+        result = await db.chats.update_one(
+            {"_id": ObjectId(chat_id), "user_id": user_id},
+            {"$set": {"title": input.title, "updated_at": datetime.now(timezone.utc).isoformat()}}
+        )
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
     if result.modified_count == 0:
         raise HTTPException(status_code=404, detail="Chat not found")
     return {"message": "Chat renamed"}
@@ -125,15 +153,21 @@ async def rename_chat(chat_id: str, input: ChatRename, request: Request):
 @api_router.delete("/chats/{chat_id}")
 async def delete_chat(chat_id: str, request: Request):
     user_id = get_user_id(request)
-    await db.chats.delete_one({"_id": ObjectId(chat_id), "user_id": user_id})
-    await db.messages.delete_many({"chat_id": chat_id})
+    try:
+        await db.chats.delete_one({"_id": ObjectId(chat_id), "user_id": user_id})
+        await db.messages.delete_many({"chat_id": chat_id})
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
     return {"message": "Chat deleted"}
 
 # ========== MESSAGE ROUTES ==========
 @api_router.get("/chats/{chat_id}/messages")
 async def get_messages(chat_id: str, request: Request):
     user_id = get_user_id(request)
-    chat = await db.chats.find_one({"_id": ObjectId(chat_id), "user_id": user_id})
+    try:
+        chat = await db.chats.find_one({"_id": ObjectId(chat_id), "user_id": user_id})
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
     messages = await db.messages.find({"chat_id": chat_id}, {"_id": 0}).sort("created_at", 1).to_list(500)
@@ -142,11 +176,18 @@ async def get_messages(chat_id: str, request: Request):
 @api_router.post("/chats/{chat_id}/messages")
 async def send_message(chat_id: str, input: MessageCreate, request: Request):
     user_id = get_user_id(request)
-    chat = await db.chats.find_one({"_id": ObjectId(chat_id), "user_id": user_id})
+    try:
+        chat = await db.chats.find_one({"_id": ObjectId(chat_id), "user_id": user_id})
+    except InvalidId:
+        raise HTTPException(status_code=400, detail="Invalid chat ID format")
     if not chat:
         raise HTTPException(status_code=404, detail="Chat not found")
 
     now = datetime.now(timezone.utc).isoformat()
+
+    # Check if this is the first message (before inserting)
+    existing_msg_count = await db.messages.count_documents({"chat_id": chat_id})
+    is_first_message = existing_msg_count == 0
 
     user_msg = {
         "id": str(uuid.uuid4()),
@@ -159,15 +200,14 @@ async def send_message(chat_id: str, input: MessageCreate, request: Request):
     await db.messages.insert_one(user_msg)
 
     # Get recent messages for context
-    recent_msgs = await db.messages.find({"chat_id": chat_id}, {"_id": 0}).sort("created_at", -1).to_list(20)
-    recent_msgs.reverse()
+    recent_msgs = await db.messages.find({"chat_id": chat_id}, {"_id": 0}).sort("created_at", 1).to_list(19)
 
     context_lines = []
     for msg in recent_msgs[:-1]:
         role_label = "User" if msg["role"] == "user" else "mini malist"
         context_lines.append(f"{role_label}: {msg['content']}")
 
-    context_str = "\n".join(context_lines[-18:])
+    context_str = "\n".join(context_lines)
     
     # Build system prompt with intensity and user name
     intensity = max(1, min(4, input.intensity or 3))
@@ -185,12 +225,12 @@ async def send_message(chat_id: str, input: MessageCreate, request: Request):
             session_id=str(uuid.uuid4()),
             system_message=system_prompt
         )
-        llm_chat.with_model("openai", "gpt-5.2")
+        llm_chat.with_model("openai", "gpt-4-turbo")
         ai_response = await llm_chat.send_message(UserMessage(text=input.content))
         ai_text = ai_response if isinstance(ai_response, str) else str(ai_response)
     except Exception as e:
         logger.error(f"AI Error: {e}")
-        ai_text = "Tera question itna bekar tha ki mera brain crash ho gaya. Try again kar."
+        ai_text = f"Request failed. Error: {type(e).__name__}. Please try again."
 
     ai_msg = {
         "id": str(uuid.uuid4()),
@@ -202,8 +242,8 @@ async def send_message(chat_id: str, input: MessageCreate, request: Request):
     }
     await db.messages.insert_one(ai_msg)
 
-    msg_count = await db.messages.count_documents({"chat_id": chat_id})
-    if msg_count <= 2:
+    # Generate chat title from first message if not already set
+    if is_first_message:
         title = input.content[:50] + ("..." if len(input.content) > 50 else "")
         await db.chats.update_one({"_id": ObjectId(chat_id)}, {"$set": {"title": title}})
 
@@ -229,8 +269,9 @@ async def search_messages(q: str, request: Request):
     if not chat_ids:
         return []
     
-    # Search messages by text match
-    query_regex = {"$regex": q.strip(), "$options": "i"}
+    # Escape regex special characters to prevent ReDoS
+    escaped_query = re.escape(q.strip())
+    query_regex = {"$regex": escaped_query, "$options": "i"}
     results = await db.messages.find(
         {"chat_id": {"$in": chat_ids}, "content": query_regex},
         {"_id": 0}
@@ -249,12 +290,18 @@ async def root():
 
 app.include_router(api_router)
 
+# Allowed origins - whitelist for production
+ALLOWED_ORIGINS = os.environ.get(
+    "CORS_ORIGINS", 
+    "http://localhost:3000,http://localhost:5173,http://127.0.0.1:3000,http://127.0.0.1:5173"
+).split(",")
+
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=[origin.strip() for origin in ALLOWED_ORIGINS],
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allow_headers=["Content-Type", "X-User-ID", "Authorization"],
 )
 
 @app.on_event("startup")

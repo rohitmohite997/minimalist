@@ -1,0 +1,39 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+README.md
+docs/
+
+# Tests
+tests/
+test_reports/
+*.test.js
+*.spec.js
+
+# Development
+.env.local
+.env.example
+.vscode
+.idea
+*.swp
+
+# Build artifacts
+node_modules/
+build/
+dist/
+*.egg-info
+
+# Cache
+.pytest_cache
+.ruff_cache
+__pycache__
+
+# Logs
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
