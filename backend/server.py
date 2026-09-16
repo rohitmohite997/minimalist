@@ -8,7 +8,8 @@ from fastapi import FastAPI, APIRouter, HTTPException, Request
 from fastapi.responses import JSONResponse
 from starlette.middleware.cors import CORSMiddleware
 from motor.motor_asyncio import AsyncIOMotorClient
-from bson import ObjectId, InvalidId
+from bson import ObjectId
+from bson.errors import InvalidId
 import os
 import logging
 import uuid
