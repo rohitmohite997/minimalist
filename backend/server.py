@@ -108,6 +108,234 @@ IMPORTANT RULES:
 - Still provide useful information, just deliver it with attitude
 - If asked about yourself, you are "mini malist" - minimalist name, maximum damage"""
 
+# ========== AUTH SYSTEM ==========
+
+import hashlib
+import secrets
+from fastapi import Response
+
+class RegisterRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+
+def normalize_email(email: str) -> str:
+    return email.strip().lower()
+
+
+def hash_password(password: str, salt: str = None):
+    if salt is None:
+        salt = secrets.token_hex(16)
+
+    password_hash = hashlib.pbkdf2_hmac(
+        "sha256",
+        password.encode("utf-8"),
+        salt.encode("utf-8"),
+        100000
+    ).hex()
+
+    return password_hash, salt
+
+
+def verify_password(password: str, password_hash: str, salt: str):
+    calculated_hash, _ = hash_password(password, salt)
+
+    return secrets.compare_digest(
+        calculated_hash,
+        password_hash
+    )
+
+
+# ---------- REGISTER ----------
+
+@api_router.post("/auth/register")
+async def register_user(input: RegisterRequest, response: Response):
+
+    email = normalize_email(input.email)
+    name = input.name.strip()
+
+    if not email or not name or not input.password:
+        raise HTTPException(
+            status_code=400,
+            detail="Name, email and password are required"
+        )
+
+    if len(input.password) < 6:
+        raise HTTPException(
+            status_code=400,
+            detail="Password must be at least 6 characters"
+        )
+
+    existing_user = await db.users.find_one({
+        "email": email
+    })
+
+    if existing_user:
+        raise HTTPException(
+            status_code=400,
+            detail="User already exists. Please login."
+        )
+
+    password_hash, salt = hash_password(input.password)
+
+    user_id = str(uuid.uuid4())
+
+    user_doc = {
+        "user_id": user_id,
+        "name": name,
+        "email": email,
+        "password_hash": password_hash,
+        "password_salt": salt,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    }
+
+    await db.users.insert_one(user_doc)
+
+    # Create login session
+    session_token = secrets.token_urlsafe(32)
+
+    await db.sessions.insert_one({
+        "session_token": session_token,
+        "user_id": user_id,
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=60 * 60 * 24 * 30
+    )
+
+    return {
+        "id": user_id,
+        "name": name,
+        "email": email
+    }
+
+
+# ---------- LOGIN ----------
+
+@api_router.post("/auth/login")
+async def login_user(input: LoginRequest, response: Response):
+
+    email = normalize_email(input.email)
+
+    user = await db.users.find_one({
+        "email": email
+    })
+
+    if not user:
+        raise HTTPException(
+            status_code=404,
+            detail="User not found. Please register first."
+        )
+
+    if not verify_password(
+        input.password,
+        user["password_hash"],
+        user["password_salt"]
+    ):
+        raise HTTPException(
+            status_code=401,
+            detail="Incorrect password"
+        )
+
+    session_token = secrets.token_urlsafe(32)
+
+    await db.sessions.insert_one({
+        "session_token": session_token,
+        "user_id": user["user_id"],
+        "created_at": datetime.now(timezone.utc).isoformat()
+    })
+
+    response.set_cookie(
+        key="session_token",
+        value=session_token,
+        httponly=True,
+        secure=True,
+        samesite="none",
+        max_age=60 * 60 * 24 * 30
+    )
+
+    return {
+        "id": user["user_id"],
+        "name": user["name"],
+        "email": user["email"]
+    }
+
+
+# ---------- CURRENT USER ----------
+
+@api_router.get("/auth/me")
+async def get_current_user(request: Request):
+
+    session_token = request.cookies.get("session_token")
+
+    if not session_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Not authenticated"
+        )
+
+    session = await db.sessions.find_one({
+        "session_token": session_token
+    })
+
+    if not session:
+        raise HTTPException(
+            status_code=401,
+            detail="Invalid session"
+        )
+
+    user = await db.users.find_one({
+        "user_id": session["user_id"]
+    })
+
+    if not user:
+        raise HTTPException(
+            status_code=401,
+            detail="User not found"
+        )
+
+    return {
+        "id": user["user_id"],
+        "name": user["name"],
+        "email": user["email"]
+    }
+
+
+# ---------- LOGOUT ----------
+
+@api_router.post("/auth/logout")
+async def logout_user(
+    request: Request,
+    response: Response
+):
+
+    session_token = request.cookies.get("session_token")
+
+    if session_token:
+        await db.sessions.delete_one({
+            "session_token": session_token
+        })
+
+    response.delete_cookie(
+        key="session_token",
+        secure=True,
+        samesite="none"
+    )
+
+    return {
+        "message": "Logged out successfully"
+    }
 # ========== CHAT ROUTES ==========
 @api_router.post("/chats")
 async def create_chat(input: ChatCreate, request: Request):
@@ -310,6 +538,9 @@ app.add_middleware(
 async def startup():
     await db.messages.create_index([("chat_id", 1), ("created_at", 1)])
     await db.chats.create_index([("user_id", 1), ("updated_at", -1)])
+
+    await db.users.create_index("email", unique=True)
+    await db.sessions.create_index("session_token", unique=True)
     logger.info("mini malist ready to roast!")
 
 @app.on_event("shutdown")
