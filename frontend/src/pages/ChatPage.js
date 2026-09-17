@@ -155,25 +155,20 @@ export default function ChatPage() {
   return (
     <>
       {showNamePrompt && <NamePrompt onSave={handleNameSave} onSkip={() => setShowNamePrompt(false)} />}
-      <div className="flex h-screen bg-zinc-950 overflow-hidden" data-testid="chat-page">
-        {/* Mobile menu button */}
+      <div className="flex h-screen overflow-hidden bg-[radial-gradient(circle_at_top_left,_rgba(96,165,250,0.12),_transparent_28%),linear-gradient(180deg,_#020817_0%,_#0b1120_38%,_#111827_100%)]" data-testid="chat-page">
         <button
           data-testid="mobile-menu-btn"
           onClick={() => setSidebarOpen(!sidebarOpen)}
-          className="fixed top-3 left-3 z-50 md:hidden bg-zinc-900/90 backdrop-blur border border-zinc-700 p-2 text-zinc-400 hover:text-amber-400 rounded-sm"
+          className="fixed left-3 top-3 z-50 rounded-xl border border-white/10 bg-slate-900/80 p-2 text-slate-200 shadow-lg backdrop-blur md:hidden hover:text-blue-300"
         >
-          {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          {sidebarOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
         </button>
 
         {sidebarOpen && (
-          <div className="fixed inset-0 bg-black/70 z-30 md:hidden" onClick={() => setSidebarOpen(false)} />
+          <div className="fixed inset-0 z-30 bg-slate-950/40 md:hidden" onClick={() => setSidebarOpen(false)} />
         )}
 
-        <div className={`
-          fixed inset-y-0 left-0 z-40 w-72 transform transition-transform duration-200
-          md:relative md:translate-x-0
-          ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-        `}>
+        <div className={`fixed inset-y-0 left-0 z-40 w-72 transform border-r border-white/10 bg-slate-950/65 shadow-[0_20px_60px_rgba(2,6,23,0.8)] backdrop-blur-2xl transition-transform duration-200 md:relative md:translate-x-0 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <ChatSidebar
             chats={chats}
             activeChat={activeChat}
@@ -189,7 +184,7 @@ export default function ChatPage() {
           />
         </div>
 
-        <div className="flex-1 flex flex-col min-w-0">
+        <div className="flex min-w-0 flex-1 flex-col bg-slate-950/20">
           {activeChat ? (
             <>
               <ChatMessages messages={messages} sending={sending} loading={loadingMessages} />
@@ -206,53 +201,54 @@ export default function ChatPage() {
 
 function WelcomeScreen({ onNewChat, userName }) {
   return (
-    <div className="flex-1 flex items-center justify-center p-8" data-testid="welcome-screen">
-      <div className="text-center max-w-xl">
-        <img src={AI_AVATAR} alt="mini malist" className="w-20 h-20 mx-auto mb-6 border-2 border-amber-400/60 rounded-sm" />
-        <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold mb-2 tracking-tight" style={{ fontFamily: 'Unbounded' }}>
-          <span className="text-zinc-100">mini</span>{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 to-rose-500">malist</span>
-        </h1>
-        <p className="text-zinc-500 text-sm mb-2 tracking-[0.3em] uppercase font-mono">savage ai</p>
-        <div className="inline-flex items-center gap-2 bg-amber-400/10 text-amber-400 border border-amber-400/30 font-bold uppercase text-[10px] px-3 py-1.5 tracking-widest mb-6 rounded-sm">
-          <Zap className="w-3 h-3" />
-          SAVAGE MODE: ALWAYS ON
-        </div>
-        {userName && (
-          <p className="text-amber-400/80 font-mono text-sm mb-4">
-            Ready to roast you, <span className="text-amber-300 font-bold">{userName}</span>
+    <div className="flex flex-1 items-center justify-center p-8" data-testid="welcome-screen">
+        <div className="max-w-xl rounded-[32px] border border-white/10 bg-slate-900/60 p-8 text-center shadow-[0_24px_80px_rgba(2,6,23,0.5)] backdrop-blur-xl">
+          <div className="mb-6 inline-flex rounded-[26px] border border-blue-400/20 bg-slate-950/50 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+            <img src={AI_AVATAR} alt="mini malist" className="h-20 w-20 rounded-2xl object-cover" />
+          </div>
+          <h1 className="mb-2 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl" style={{ fontFamily: 'Manrope' }}>
+            <span className="text-slate-100">mini</span>{' '}
+            <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">malist</span>
+          </h1>
+          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">smart ai chat</p>
+          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-200">
+            <Zap className="h-3 w-3" />
+            focused conversations
+          </div>
+          {userName && (
+            <p className="mb-4 text-sm text-slate-300">
+              Welcome back, <span className="font-bold text-blue-300">{userName}</span>
+            </p>
+          )}
+          <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-slate-300">
+            Start a chat, ask for help, and keep everything in one clean conversation space.
           </p>
-        )}
-        <p className="text-zinc-400 font-mono text-sm mb-8 max-w-md mx-auto leading-relaxed">
-          Ask anything in any language. Get roasted in the same language. No mercy. No filter.
-        </p>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-8 text-left max-w-md mx-auto">
-          {[
-            { text: "Motivate me please", lang: "EN" },
-            { text: "Meri life boring hai", lang: "HI" },
-            { text: "JavaScript vs Python?", lang: "EN" },
-            { text: "Tu kaun hai be?", lang: "HI" }
-          ].map((prompt, i) => (
-            <button
-              key={i}
-              data-testid={`suggestion-${i}`}
-              onClick={onNewChat}
-              className="group border border-zinc-800 hover:border-amber-400/50 bg-zinc-900/50 hover:bg-zinc-900 p-3.5 text-left text-sm text-zinc-400 hover:text-zinc-200 font-mono rounded-sm transition-colors duration-150"
-            >
-              <span className="text-[10px] text-amber-400/60 uppercase tracking-wider block mb-1">{prompt.lang}</span>
-              "{prompt.text}"
-            </button>
-          ))}
+          <div className="mx-auto mb-8 grid max-w-md grid-cols-1 gap-3 text-left sm:grid-cols-2">
+            {[
+              { text: 'Plan my week', lang: 'EN' },
+              { text: 'Mera din kaise improve ho', lang: 'HI' },
+              { text: 'Explain REST APIs', lang: 'EN' },
+              { text: 'Project ideas chahiye', lang: 'HI' }
+            ].map((prompt, i) => (
+              <button
+                key={i}
+                data-testid={`suggestion-${i}`}
+                onClick={onNewChat}
+                className="rounded-2xl border border-white/10 bg-slate-950/40 p-3.5 text-left text-sm text-slate-300 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400/30 hover:bg-slate-900/70 hover:text-white"
+              >
+                <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-300">{prompt.lang}</span>
+                "{prompt.text}"
+              </button>
+            ))}
+          </div>
+          <button
+            data-testid="welcome-new-chat-btn"
+            onClick={onNewChat}
+            className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-blue-900/40 transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-500 hover:to-indigo-500"
+            <Flame className="mr-2 inline h-4 w-4" />
+            Start chatting
+          </button>
         </div>
-        <button
-          data-testid="welcome-new-chat-btn"
-          onClick={onNewChat}
-          className="bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-black px-8 py-3 font-bold uppercase tracking-widest text-sm rounded-sm transition-all duration-150"
-        >
-          <Flame className="w-4 h-4 inline mr-2" />
-          START ROASTING
-        </button>
       </div>
-    </div>
-  );
-}
+    );
+  }

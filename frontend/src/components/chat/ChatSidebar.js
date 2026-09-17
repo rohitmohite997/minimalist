@@ -74,84 +74,83 @@ export default function ChatSidebar({ chats, activeChat, onSelectChat, onNewChat
   };
 
   return (
-    <div className="h-full bg-zinc-900 border-r border-zinc-800 flex flex-col w-72" data-testid="chat-sidebar">
-      {/* Header */}
-      <div className="p-4 border-b border-zinc-800">
-        <div className="flex items-center gap-2.5 mb-4">
-          <img src={AI_AVATAR} alt="AI" className="w-8 h-8 border border-amber-400/40 rounded-sm" />
-          <span className="font-extrabold text-sm tracking-tight" style={{ fontFamily: 'Unbounded' }}>
-            <span className="text-zinc-200">mini</span>{' '}
-            <span className="text-amber-400">malist</span>
+    <div className="flex h-full w-72 flex-col bg-slate-950/70 text-slate-100 backdrop-blur-2xl" data-testid="chat-sidebar">
+      <div className="border-b border-white/10 p-4">
+        <div className="mb-4 flex items-center gap-2.5">
+          <img src={AI_AVATAR} alt="AI" className="h-8 w-8 rounded-xl border border-blue-400/30 bg-blue-500/10" />
+          <span className="text-sm font-extrabold tracking-tight" style={{ fontFamily: 'Manrope' }}>
+            <span className="text-slate-100">mini</span>{' '}
+            <span className="text-blue-300">malist</span>
           </span>
         </div>
         <div className="flex gap-2">
           <button
             data-testid="new-chat-btn"
             onClick={onNewChat}
-            className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-rose-500 hover:from-amber-400 hover:to-rose-400 text-black py-2.5 font-bold uppercase tracking-widest text-[11px] rounded-sm transition-all duration-150"
+            className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-blue-600 to-indigo-600 px-3 py-2.5 text-[11px] font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-blue-900/30 transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-500 hover:to-indigo-500"
           >
-            <Plus className="w-4 h-4" />
-            NEW
+            <Plus className="h-4 w-4" />
+            New
           </button>
           <button
             data-testid="search-btn"
             onClick={() => setSearchOpen(!searchOpen)}
-            className={`w-10 flex items-center justify-center border rounded-sm transition-colors duration-150 ${
+            className={`flex w-10 items-center justify-center rounded-xl border transition-all duration-200 ${
               searchOpen
-                ? 'border-amber-400 text-amber-400 bg-amber-400/10'
-                : 'border-zinc-700 text-zinc-400 hover:text-amber-400 hover:border-amber-400/50'
+                ? 'border-blue-400/30 bg-blue-500/10 text-blue-300'
+                : 'border-white/10 bg-slate-900/60 text-slate-400 hover:border-blue-400/30 hover:text-blue-300'
             }`}
           >
-            <Search className="w-4 h-4" />
+            <Search className="h-4 w-4" />
           </button>
         </div>
       </div>
 
       {/* Search panel */}
       {searchOpen && (
-        <div className="border-b border-zinc-800 bg-zinc-900" data-testid="search-panel">
+        <div className="border-b border-white/10 bg-slate-900/60" data-testid="search-panel">
           <div className="p-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-zinc-500" />
+              <Search className="absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-slate-400" />
               <input
                 ref={searchInputRef}
                 data-testid="search-input"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search all chats..."
-                className="w-full bg-zinc-950 border border-zinc-700 focus:border-amber-400 text-white text-xs font-mono pl-9 pr-8 py-2.5 outline-none rounded-sm placeholder:text-zinc-600"
+                className="w-full rounded-xl border border-white/10 bg-slate-950/80 py-2.5 pl-9 pr-8 text-xs font-mono text-white outline-none placeholder:text-slate-500 focus:border-blue-400"
               />
               {searchQuery && (
-                <button onClick={closeSearch} className="absolute right-2 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300">
-                  <X className="w-3.5 h-3.5" />
+                <button onClick={closeSearch} className="absolute right-2 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200">
+                  <X className="h-3.5 w-3.5" />
                 </button>
               )}
             </div>
           </div>
-          {searching && <div className="px-3 pb-3"><p className="text-zinc-500 text-[11px] font-mono">Searching...</p></div>}
+          {searching && <div className="px-3 pb-3"><p className="text-slate-400 text-[11px] font-mono">Searching...</p></div>}
           {!searching && searchResults.length > 0 && (
             <ScrollArea className="max-h-60">
-              <div className="px-2 pb-2 space-y-0.5">
+              <div className="space-y-0.5 px-2 pb-2">
                 {searchResults.map((r, i) => (
-                  <button key={i} data-testid={`search-result-${i}`} onClick={() => { onSelectFromSearch(r.chat_id); closeSearch(); }} className="w-full text-left px-3 py-2.5 hover:bg-zinc-800 rounded-sm">
-                    <p className="text-[10px] text-amber-400/70 font-mono uppercase tracking-wider mb-1 truncate">{r.chat_title}</p>
-                    <p className="text-xs text-zinc-300 font-mono truncate">{r.content}</p>
-                    <p className="text-[10px] text-zinc-600 font-mono mt-0.5">{r.role === 'user' ? 'You' : 'AI'}</p>
+                  <button key={i} data-testid={`search-result-${i}`} onClick={() => { onSelectFromSearch(r.chat_id); closeSearch(); }} className="w-full rounded-xl px-3 py-2.5 text-left transition-colors hover:bg-slate-800/80">
+                    <p className="mb-1 truncate text-[10px] font-mono uppercase tracking-wider text-blue-300">{r.chat_title}</p>
+                    <p className="truncate text-xs font-mono text-slate-200">{r.content}</p>
+                    <p className="mt-0.5 text-[10px] font-mono text-slate-500">{r.role === 'user' ? 'You' : 'AI'}</p>
                   </button>
                 ))}
               </div>
             </ScrollArea>
           )}
           {!searching && searchQuery.length >= 2 && searchResults.length === 0 && (
-            <div className="px-3 pb-3"><p className="text-zinc-600 text-[11px] font-mono">No results found.</p></div>
+            <div className="px-3 pb-3"><p className="text-slate-500 text-[11px] font-mono">No results found.</p></div>
           )}
         </div>
       )}
 
       {/* Intensity Slider */}
-      <div className="px-4 py-3 border-b border-zinc-800" data-testid="intensity-section">
-        <div className="flex items-center justify-between mb-2.5">
-          <span className="text-[10px] text-zinc-500 font-mono uppercase tracking-widest">Roast Level</span>
+      <div className="border-b border-white/10 px-4 py-3" data-testid="intensity-section">
+        <div className="mb-2.5 flex items-center justify-between">
+          <span className="text-[10px] font-mono uppercase tracking-widest text-slate-400">Roast Level</span>
           <span className={`text-[11px] font-black uppercase tracking-wider ${currentIntensity.color}`} data-testid="intensity-label">
             {currentIntensity.label}
           </span>
@@ -165,32 +164,32 @@ export default function ChatSidebar({ chats, activeChat, onSelectChat, onNewChat
           step={1}
           className="w-full"
         />
-        <div className="flex justify-between mt-1.5">
-          <span className="text-[9px] text-emerald-400/50 font-mono">Chill</span>
-          <span className="text-[9px] text-rose-500/50 font-mono">Nuclear</span>
+        <div className="mt-1.5 flex justify-between">
+          <span className="text-[9px] text-emerald-300/60 font-mono">Chill</span>
+          <span className="text-[9px] text-rose-300/60 font-mono">Nuclear</span>
         </div>
-        <p className="text-[10px] text-zinc-600 font-mono mt-1">{currentIntensity.desc}</p>
+        <p className="mt-1 text-[10px] font-mono text-slate-500">{currentIntensity.desc}</p>
       </div>
 
       {/* Chat list */}
       <ScrollArea className="flex-1 px-2">
-        <div className="space-y-0.5 py-1">
+        <div className="space-y-1 py-1">
           {chats.length === 0 ? (
-            <p className="text-zinc-600 text-xs font-mono px-3 py-6 text-center">
+            <p className="px-3 py-6 text-center text-xs font-mono text-slate-500">
               No chats yet. Start one.
             </p>
           ) : (
             chats.map((chat) => (
               <div
                 key={chat.id}
-                className={`group flex items-center gap-2 px-3 py-2.5 cursor-pointer rounded-sm transition-colors duration-100 ${
+                className={`group flex cursor-pointer items-center gap-2 rounded-2xl px-3 py-2.5 transition-all duration-200 ${
                   activeChat === chat.id
-                    ? 'bg-zinc-800 border-l-2 border-amber-400'
-                    : 'hover:bg-zinc-800/50 border-l-2 border-transparent'
+                    ? 'border border-blue-400/30 bg-slate-800/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.02)]'
+                    : 'border border-transparent hover:bg-slate-800/60'
                 }`}
                 data-testid={`chat-item-${chat.id}`}
               >
-                <MessageSquare className={`w-4 h-4 shrink-0 ${activeChat === chat.id ? 'text-amber-400' : 'text-zinc-600'}`} />
+                <MessageSquare className={`h-4 w-4 shrink-0 ${activeChat === chat.id ? 'text-blue-300' : 'text-slate-500'}`} />
 
                 {editingId === chat.id ? (
                   <input
@@ -203,12 +202,12 @@ export default function ChatSidebar({ chats, activeChat, onSelectChat, onNewChat
                       if (e.key === 'Enter') handleRename(chat.id);
                       if (e.key === 'Escape') { setEditingId(null); setEditTitle(''); }
                     }}
-                    className="flex-1 bg-zinc-800 border border-zinc-600 text-white text-xs font-mono px-2 py-1 outline-none focus:border-amber-400 rounded-sm"
+                    className="flex-1 rounded-xl border border-white/10 bg-slate-900 px-2 py-1 text-xs font-mono text-white outline-none focus:border-blue-400"
                   />
                 ) : (
                   <span
                     onClick={() => onSelectChat(chat.id)}
-                    className={`flex-1 text-xs font-mono truncate ${activeChat === chat.id ? 'text-zinc-100' : 'text-zinc-400'}`}
+                    className={`flex-1 truncate text-xs font-mono ${activeChat === chat.id ? 'text-slate-100' : 'text-slate-400'}`}
                   >
                     {chat.title || 'New Chat'}
                   </span>
@@ -216,17 +215,17 @@ export default function ChatSidebar({ chats, activeChat, onSelectChat, onNewChat
 
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button data-testid={`chat-menu-${chat.id}`} className="opacity-0 group-hover:opacity-100 text-zinc-500 hover:text-amber-400 p-0.5">
-                      <MoreHorizontal className="w-4 h-4" />
+                    <button data-testid={`chat-menu-${chat.id}`} className="p-0.5 text-slate-500 opacity-0 transition-colors hover:text-blue-300 group-hover:opacity-100">
+                      <MoreHorizontal className="h-4 w-4" />
                     </button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent className="bg-zinc-800 border-zinc-700 rounded-sm">
-                    <DropdownMenuItem data-testid={`rename-chat-${chat.id}`} onClick={() => { setEditingId(chat.id); setEditTitle(chat.title || ''); }} className="text-zinc-300 hover:text-white focus:bg-zinc-700 rounded-sm cursor-pointer font-mono text-xs">
-                      <Pencil className="w-3 h-3 mr-2" />Rename
+                  <DropdownMenuContent className="rounded-xl border border-white/10 bg-slate-900 text-slate-100 shadow-2xl">
+                    <DropdownMenuItem data-testid={`rename-chat-${chat.id}`} onClick={() => { setEditingId(chat.id); setEditTitle(chat.title || ''); }} className="cursor-pointer rounded-lg font-mono text-xs text-slate-200 hover:bg-slate-800">
+                      <Pencil className="mr-2 h-3 w-3" />Rename
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator className="bg-zinc-700" />
-                    <DropdownMenuItem data-testid={`delete-chat-${chat.id}`} onClick={() => onDeleteChat(chat.id)} className="text-rose-400 hover:text-rose-300 focus:bg-zinc-700 rounded-sm cursor-pointer font-mono text-xs">
-                      <Trash2 className="w-3 h-3 mr-2" />Delete
+                    <DropdownMenuSeparator className="bg-white/10" />
+                    <DropdownMenuItem data-testid={`delete-chat-${chat.id}`} onClick={() => onDeleteChat(chat.id)} className="cursor-pointer rounded-lg font-mono text-xs text-rose-300 hover:bg-slate-800">
+                      <Trash2 className="mr-2 h-3 w-3" />Delete
                     </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
@@ -236,19 +235,18 @@ export default function ChatSidebar({ chats, activeChat, onSelectChat, onNewChat
         </div>
       </ScrollArea>
 
-      {/* User section */}
-      <div className="border-t border-zinc-800 px-4 py-3">
+      <div className="border-t border-white/10 px-4 py-3">
         <button
           data-testid="edit-name-btn"
           onClick={onEditName}
-          className="w-full flex items-center gap-2.5 hover:bg-zinc-800 p-2 rounded-sm transition-colors duration-150 -m-2"
+          className="-m-2 flex w-full items-center gap-2.5 rounded-2xl p-2 transition-all duration-200 hover:bg-slate-800/70"
         >
-          <div className="w-8 h-8 bg-zinc-800 border border-zinc-700 flex items-center justify-center rounded-sm shrink-0">
-            <User className="w-4 h-4 text-amber-400" />
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl border border-white/10 bg-slate-800">
+            <User className="h-4 w-4 text-blue-300" />
           </div>
           <div className="min-w-0 text-left">
-            <p className="text-xs font-mono text-zinc-200 truncate">{userName || 'Anonymous'}</p>
-            <p className="text-[10px] font-mono text-zinc-600">{userName ? 'Tap to change name' : 'Tap to set name'}</p>
+            <p className="truncate text-xs font-mono text-slate-100">{userName || 'Anonymous'}</p>
+            <p className="text-[10px] font-mono text-slate-500">{userName ? 'Tap to change name' : 'Tap to set name'}</p>
           </div>
         </button>
       </div>

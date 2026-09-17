@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Zap, Share2, Check, Copy } from 'lucide-react';
+import { Zap, Check, Copy } from 'lucide-react';
 import { toast } from 'sonner';
 
 const AI_AVATAR = "https://static.prod-images.emergentagent.com/jobs/1e633876-7148-4142-8a3d-10cb5ae62c39/images/a80f1ac106d58a9eef96d6d5cb0fa44a447f3c41fe6027801bd85c2e225ab8ee.png";
@@ -8,13 +8,13 @@ const APP_URL = window.location.origin;
 function TypingIndicator() {
   return (
     <div className="flex items-start gap-3 animate-fade-in-up" data-testid="typing-indicator">
-      <img src={AI_AVATAR} alt="AI" className="w-8 h-8 border border-amber-400/40 shrink-0 mt-1 rounded-sm" />
-      <div className="border-l-2 border-amber-400 pl-4 py-2">
-        <div className="flex gap-1.5 items-center">
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" style={{ animationDelay: '0ms' }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse" style={{ animationDelay: '150ms' }} />
-          <span className="w-1.5 h-1.5 rounded-full bg-amber-400 animate-pulse" style={{ animationDelay: '300ms' }} />
-          <span className="text-zinc-500 text-xs font-mono ml-2">cooking a roast...</span>
+      <img src={AI_AVATAR} alt="AI" className="mt-1 h-8 w-8 shrink-0 rounded-sm border border-amber-400/40" />
+      <div className="border-l-2 border-amber-400 py-2 pl-4">
+        <div className="flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" style={{ animationDelay: '0ms' }} />
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-rose-400" style={{ animationDelay: '150ms' }} />
+          <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-amber-400" style={{ animationDelay: '300ms' }} />
+          <span className="ml-2 text-xs font-mono text-zinc-500">cooking a roast...</span>
         </div>
       </div>
     </div>
@@ -45,32 +45,23 @@ function TypewriterText({ text }) {
   return (
     <span>
       {displayed}
-      {!done && <span className="inline-block w-0.5 h-4 bg-amber-400 ml-0.5 animate-pulse" />}
+      {!done && <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-amber-400" />}
     </span>
   );
 }
 
-function ShareButton({ content }) {
+function CopyTextButton({ content, title }) {
   const [copied, setCopied] = useState(false);
 
-  const handleShare = async () => {
-    const shareText = `mini malist just roasted me:\n\n"${content}"\n\nGet roasted at ${APP_URL}`;
+  const handleCopy = async () => {
+    const shareText = title === 'Share this roast'
+      ? `mini malist just roasted me:\n\n"${content}"\n\nGet roasted at ${APP_URL}`
+      : content;
 
-    // Try native share first (mobile)
-    if (navigator.share) {
-      try {
-        await navigator.share({ title: 'mini malist - Savage AI', text: shareText });
-        return;
-      } catch {
-        // Fallback to clipboard
-      }
-    }
-
-    // Copy to clipboard
     try {
       await navigator.clipboard.writeText(shareText);
       setCopied(true);
-      toast.success('Roast copied! Share it everywhere.');
+      toast.success(title === 'Share this roast' ? 'Roast copied! Share it everywhere.' : 'Message copied to clipboard.');
       setTimeout(() => setCopied(false), 2000);
     } catch {
       toast.error('Could not copy to clipboard');
@@ -79,12 +70,13 @@ function ShareButton({ content }) {
 
   return (
     <button
-      data-testid="share-btn"
-      onClick={handleShare}
-      className="opacity-0 group-hover:opacity-100 text-zinc-600 hover:text-amber-400 p-1 transition-all duration-150"
-      title="Share this roast"
+      type="button"
+      onClick={handleCopy}
+      className="p-1 text-zinc-600 transition-all duration-150 hover:text-amber-400"
+      title={title}
+      aria-label={title}
     >
-      {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+      {copied ? <Check className="h-3.5 w-3.5 text-emerald-400" /> : <Copy className="h-3.5 w-3.5" />}
     </button>
   );
 }
@@ -95,8 +87,13 @@ function MessageBubble({ message, isLatestAI }) {
   if (isUser) {
     return (
       <div className="flex justify-end animate-fade-in-up" data-testid={`message-${message.id}`}>
-        <div className="bg-zinc-800 border border-zinc-700 px-4 py-3 max-w-[80%] rounded-sm">
-          <p className="text-zinc-100 text-sm font-mono whitespace-pre-wrap leading-relaxed">{message.content}</p>
+        <div className="group flex max-w-[80%] items-end gap-2">
+          <div className="rounded-2xl border border-blue-400/20 bg-gradient-to-br from-slate-800 to-slate-900 px-4 py-3 shadow-[0_12px_35px_rgba(2,6,23,0.38)]">
+            <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-50 font-mono">{message.content}</p>
+          </div>
+          <div className="opacity-0 transition-opacity duration-150 group-hover:opacity-100">
+            <CopyTextButton content={message.content} title="Copy message" />
+          </div>
         </div>
       </div>
     );
@@ -104,14 +101,14 @@ function MessageBubble({ message, isLatestAI }) {
 
   return (
     <div className="group flex items-start gap-3 animate-fade-in-up" data-testid={`message-${message.id}`}>
-      <img src={AI_AVATAR} alt="AI" className="w-8 h-8 border border-amber-400/40 shrink-0 mt-1 rounded-sm" />
-      <div className="border-l-2 border-amber-400 pl-4 py-1 max-w-[85%] flex-1">
-        <p className="text-zinc-200 text-sm font-mono whitespace-pre-wrap leading-relaxed">
+      <img src={AI_AVATAR} alt="AI" className="mt-1 h-8 w-8 shrink-0 rounded-sm border border-blue-400/30 bg-slate-800" />
+      <div className="max-w-[85%] flex-1 border-l-2 border-blue-400/70 pl-4 py-1">
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200 font-mono">
           {isLatestAI ? <TypewriterText text={message.content} /> : message.content}
         </p>
       </div>
-      <div className="shrink-0 mt-1">
-        <ShareButton content={message.content} />
+      <div className="mt-1 shrink-0">
+        <CopyTextButton content={message.content} title="Share this roast" />
       </div>
     </div>
   );
@@ -136,10 +133,10 @@ export default function ChatMessages({ messages, sending, loading }) {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex flex-1 items-center justify-center">
         <div className="flex items-center gap-3">
-          <div className="w-5 h-5 border-2 border-amber-400 border-t-transparent animate-spin rounded-full" />
-          <span className="text-zinc-500 font-mono text-sm">Loading messages...</span>
+          <div className="h-5 w-5 animate-spin rounded-full border-2 border-amber-400 border-t-transparent" />
+          <span className="text-sm font-mono text-zinc-500">Loading messages...</span>
         </div>
       </div>
     );
@@ -147,12 +144,12 @@ export default function ChatMessages({ messages, sending, loading }) {
 
   return (
     <div className="flex-1 overflow-y-auto pb-32 pt-4 md:pt-8" data-testid="chat-messages">
-      <div className="max-w-4xl mx-auto w-full px-4 md:px-8 space-y-6">
+      <div className="mx-auto w-full max-w-4xl space-y-6 px-4 md:px-8">
         {messages.length === 0 && !sending && (
-          <div className="flex items-center justify-center h-full min-h-[200px]">
+          <div className="flex min-h-[200px] items-center justify-center">
             <div className="text-center">
-              <Zap className="w-8 h-8 text-amber-400/20 mx-auto mb-3" />
-              <p className="text-zinc-600 font-mono text-sm">Type something... if you dare.</p>
+              <Zap className="mx-auto mb-3 h-8 w-8 text-amber-400/20" />
+              <p className="text-sm font-mono text-zinc-600">Type something... if you dare.</p>
             </div>
           </div>
         )}

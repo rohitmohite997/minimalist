@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Zap } from 'lucide-react';
+import { Send, Zap, Clipboard } from 'lucide-react';
 
 export default function ChatInput({ onSend, sending }) {
   const [text, setText] = useState('');
@@ -22,6 +22,19 @@ export default function ChatInput({ onSend, sending }) {
     }
   };
 
+  const handlePaste = async () => {
+    try {
+      const clipboardText = await navigator.clipboard.readText();
+      if (!clipboardText) return;
+      setText((prev) => {
+        const nextValue = prev ? `${prev}${prev.endsWith('\n') ? '' : '\n'}${clipboardText}` : clipboardText;
+        return nextValue;
+      });
+    } catch {
+      // Ignore clipboard access issues; keyboard paste still works normally.
+    }
+  };
+
   const handleKeyDown = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -30,10 +43,10 @@ export default function ChatInput({ onSend, sending }) {
   };
 
   return (
-    <div className="border-t border-zinc-800 bg-zinc-950/95 backdrop-blur-md" data-testid="chat-input-area">
-      <div className="max-w-4xl mx-auto w-full p-4">
+    <div className="border-t border-white/10 bg-slate-950/60 backdrop-blur-xl" data-testid="chat-input-area">
+      <div className="mx-auto w-full max-w-4xl p-4">
         <form onSubmit={handleSubmit} className="flex gap-2">
-          <div className="flex-1 relative">
+          <div className="relative flex-1">
             <textarea
               ref={textareaRef}
               data-testid="chat-input"
@@ -43,29 +56,37 @@ export default function ChatInput({ onSend, sending }) {
               placeholder="Ask anything, in any language..."
               rows={1}
               disabled={sending}
-              className="w-full resize-none border border-zinc-700 focus:border-amber-400 bg-zinc-900 text-white p-4 pr-12 font-mono text-sm placeholder:text-zinc-600 outline-none disabled:opacity-50 rounded-sm transition-colors duration-150"
+              className="w-full resize-none rounded-2xl border border-white/10 bg-slate-900/80 p-4 pr-12 font-mono text-sm text-slate-50 placeholder:text-slate-500 outline-none transition-colors duration-150 focus:border-blue-400 disabled:opacity-50"
               style={{ minHeight: '52px', maxHeight: '160px' }}
             />
+            <button
+              type="button"
+              onClick={handlePaste}
+              className="absolute right-12 top-1/2 -translate-y-1/2 rounded-xl border border-white/10 bg-slate-800 p-2 text-slate-300 transition-all duration-200 hover:border-blue-400/30 hover:text-blue-300"
+              aria-label="Paste from clipboard"
+            >
+              <Clipboard className="h-4 w-4" />
+            </button>
           </div>
           <button
             data-testid="send-btn"
             type="submit"
             disabled={!text.trim() || sending}
-            className={`w-[52px] h-[52px] flex items-center justify-center rounded-sm transition-all duration-150 shrink-0 ${
+            className={`h-[52px] w-[52px] shrink-0 rounded-2xl transition-all duration-200 ${
               text.trim() && !sending
-                ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-black hover:from-amber-400 hover:to-rose-400 shadow-lg shadow-amber-500/20'
-                : 'bg-zinc-800 text-zinc-600 cursor-not-allowed border border-zinc-700'
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg shadow-blue-900/40 hover:-translate-y-0.5 hover:from-blue-500 hover:to-indigo-500'
+                : 'cursor-not-allowed border border-white/10 bg-slate-800 text-slate-500'
             }`}
           >
             {sending ? (
-              <Zap className="w-5 h-5 animate-pulse" />
+              <Zap className="h-5 w-5 animate-pulse" />
             ) : (
-              <Send className="w-5 h-5" />
+              <Send className="h-5 w-5" />
             )}
           </button>
         </form>
-        <p className="text-zinc-700 text-[10px] font-mono text-center mt-2">
-          mini malist roasts in every language equally.
+        <p className="mt-2 text-center text-[10px] font-mono uppercase tracking-[0.2em] text-slate-500">
+          Copy, paste, and keep chatting.
         </p>
       </div>
     </div>

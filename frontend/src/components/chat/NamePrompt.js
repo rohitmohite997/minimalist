@@ -15,17 +15,17 @@ export default function NamePrompt({ onSave, onSkip }) {
 
   return (
     <Dialog open={true} onOpenChange={() => {}}>
-      <DialogContent className="bg-zinc-900 border-zinc-700 rounded-sm max-w-md sm:rounded-sm" data-testid="name-prompt-dialog">
+      <DialogContent className="max-w-md rounded-[28px] border border-white/10 bg-slate-900/90 p-6 text-slate-100 shadow-[0_30px_100px_rgba(2,6,23,0.8)] backdrop-blur-2xl" data-testid="name-prompt-dialog">
         <DialogHeader>
-          <DialogTitle className="text-zinc-100 text-xl" style={{ fontFamily: 'Unbounded' }}>
-            <span className="text-zinc-100">mini</span>{' '}
-            <span className="text-amber-400">malist</span>
+          <DialogTitle className="text-xl text-slate-100" style={{ fontFamily: 'Manrope' }}>
+            <span className="text-slate-100">mini</span>{' '}
+            <span className="text-blue-300">malist</span>
           </DialogTitle>
-          <DialogDescription className="text-zinc-400 font-mono text-sm">
-            What's your name? So we can roast you personally.
+          <DialogDescription className="text-sm text-slate-300">
+            What should we call you for this chat?
           </DialogDescription>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4 mt-2">
+        <form onSubmit={handleSubmit} className="mt-4 space-y-4">
           <Input
             data-testid="name-prompt-input"
             type="text"
@@ -33,27 +33,27 @@ export default function NamePrompt({ onSave, onSkip }) {
             onChange={(e) => setName(e.target.value)}
             placeholder="Enter your name..."
             autoFocus
-            className="rounded-sm border-zinc-700 focus:border-amber-400 bg-zinc-950 text-white font-mono h-12 placeholder:text-zinc-600"
+            className="h-12 rounded-xl border border-white/10 bg-slate-800 text-slate-50 placeholder:text-slate-500 focus:border-blue-400"
           />
           <div className="flex gap-2">
             <button
               type="submit"
               data-testid="name-prompt-save"
               disabled={!name.trim()}
-              className={`flex-1 py-3 font-bold uppercase tracking-widest text-sm rounded-sm transition-all duration-150 ${
+              className={`flex-1 rounded-xl py-3 text-sm font-bold uppercase tracking-[0.2em] transition-all duration-200 ${
                 name.trim()
-                  ? 'bg-gradient-to-r from-amber-500 to-rose-500 text-black hover:from-amber-400 hover:to-rose-400'
-                  : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white hover:from-blue-500 hover:to-indigo-500'
+                  : 'cursor-not-allowed bg-slate-700 text-slate-500'
               }`}
             >
-              <Zap className="w-4 h-4 inline mr-2" />
-              LET'S GO
+              <Zap className="mr-2 inline h-4 w-4" />
+              Save
             </button>
             <button
               type="button"
               data-testid="name-prompt-skip"
               onClick={onSkip}
-              className="px-6 py-3 border border-zinc-700 text-zinc-400 hover:text-zinc-200 hover:border-zinc-500 font-mono text-sm rounded-sm transition-colors duration-150"
+              className="rounded-xl border border-white/10 bg-slate-800 px-6 py-3 text-sm text-slate-300 transition-colors hover:border-blue-400/30 hover:text-white"
             >
               Skip
             </button>
