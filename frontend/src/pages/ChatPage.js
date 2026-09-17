@@ -201,54 +201,81 @@ export default function ChatPage() {
 
 function WelcomeScreen({ onNewChat, userName }) {
   return (
-    <div className="flex flex-1 items-center justify-center p-8" data-testid="welcome-screen">
-        <div className="max-w-xl rounded-[32px] border border-white/10 bg-slate-900/60 p-8 text-center shadow-[0_24px_80px_rgba(2,6,23,0.5)] backdrop-blur-xl">
-          <div className="mb-6 inline-flex rounded-[26px] border border-blue-400/20 bg-slate-950/50 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
-            <img src={AI_AVATAR} alt="mini malist" className="h-20 w-20 rounded-2xl object-cover" />
-          </div>
-          <h1 className="mb-2 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl" style={{ fontFamily: 'Manrope' }}>
-            <span className="text-slate-100">mini</span>{' '}
-            <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">malist</span>
-          </h1>
-          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">smart ai chat</p>
-          <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-200">
-            <Zap className="h-3 w-3" />
-            focused conversations
-          </div>
-          {userName && (
-            <p className="mb-4 text-sm text-slate-300">
-              Welcome back, <span className="font-bold text-blue-300">{userName}</span>
-            </p>
-          )}
-          <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-slate-300">
-            Start a chat, ask for help, and keep everything in one clean conversation space.
-          </p>
-          <div className="mx-auto mb-8 grid max-w-md grid-cols-1 gap-3 text-left sm:grid-cols-2">
-            {[
-              { text: 'Plan my week', lang: 'EN' },
-              { text: 'Mera din kaise improve ho', lang: 'HI' },
-              { text: 'Explain REST APIs', lang: 'EN' },
-              { text: 'Project ideas chahiye', lang: 'HI' }
-            ].map((prompt, i) => (
-              <button
-                key={i}
-                data-testid={`suggestion-${i}`}
-                onClick={onNewChat}
-                className="rounded-2xl border border-white/10 bg-slate-950/40 p-3.5 text-left text-sm text-slate-300 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400/30 hover:bg-slate-900/70 hover:text-white"
-              >
-                <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-300">{prompt.lang}</span>
-                "{prompt.text}"
-              </button>
-            ))}
-          </div>
-          <button
-            data-testid="welcome-new-chat-btn"
-            onClick={onNewChat}
-            className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-blue-900/40 transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-500 hover:to-indigo-500"
-            <Flame className="mr-2 inline h-4 w-4" />
-            Start chatting
-          </button>
+    <div
+      className="flex flex-1 items-center justify-center p-8"
+      data-testid="welcome-screen"
+    >
+      <div className="max-w-xl rounded-[32px] border border-white/10 bg-slate-900/60 p-8 text-center shadow-[0_24px_80px_rgba(2,6,23,0.5)] backdrop-blur-xl">
+
+        <div className="mb-6 inline-flex rounded-[26px] border border-blue-400/20 bg-slate-950/50 p-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]">
+          <img
+            src={AI_AVATAR}
+            alt="mini malist"
+            className="h-20 w-20 rounded-2xl object-cover"
+          />
         </div>
+
+        <h1
+          className="mb-2 text-4xl font-extrabold tracking-tight sm:text-5xl lg:text-6xl"
+          style={{ fontFamily: 'Manrope' }}
+        >
+          <span className="text-slate-100">mini</span>{' '}
+          <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+            malist
+          </span>
+        </h1>
+
+        <p className="mb-2 text-xs font-semibold uppercase tracking-[0.35em] text-slate-400">
+          smart ai chat
+        </p>
+
+        <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-400/20 bg-blue-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-blue-200">
+          <Zap className="h-3 w-3" />
+          focused conversations
+        </div>
+
+        {userName && (
+          <p className="mb-4 text-sm text-slate-300">
+            Welcome back,{' '}
+            <span className="font-bold text-blue-300">{userName}</span>
+          </p>
+        )}
+
+        <p className="mx-auto mb-8 max-w-md text-sm leading-relaxed text-slate-300">
+          Start a chat, ask for help, and keep everything in one clean conversation space.
+        </p>
+
+        <div className="mx-auto mb-8 grid max-w-md grid-cols-1 gap-3 text-left sm:grid-cols-2">
+          {[
+            { text: 'Plan my week', lang: 'EN' },
+            { text: 'Mera din kaise improve ho', lang: 'HI' },
+            { text: 'Explain REST APIs', lang: 'EN' },
+            { text: 'Project ideas chahiye', lang: 'HI' }
+          ].map((prompt, i) => (
+            <button
+              key={i}
+              data-testid={`suggestion-${i}`}
+              onClick={onNewChat}
+              className="rounded-2xl border border-white/10 bg-slate-950/40 p-3.5 text-left text-sm text-slate-300 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:border-blue-400/30 hover:bg-slate-900/70 hover:text-white"
+            >
+              <span className="mb-1 block text-[10px] font-semibold uppercase tracking-[0.2em] text-blue-300">
+                {prompt.lang}
+              </span>
+              "{prompt.text}"
+            </button>
+          ))}
+        </div>
+
+        <button
+          data-testid="welcome-new-chat-btn"
+          onClick={onNewChat}
+          className="rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 px-8 py-3 text-sm font-bold uppercase tracking-[0.2em] text-white shadow-lg shadow-blue-900/40 transition-all duration-200 hover:-translate-y-0.5 hover:from-blue-500 hover:to-indigo-500"
+        >
+          <Flame className="mr-2 inline h-4 w-4" />
+          Start chatting
+        </button>
+
       </div>
-    );
-  }
+    </div>
+  );
+}
