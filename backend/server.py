@@ -227,7 +227,7 @@ async def send_message(chat_id: str, input: MessageCreate, request: Request):
             session_id=str(uuid.uuid4()),
             system_message=system_prompt
         )
-        llm_chat.with_model("openai", "gpt-4-turbo")
+        llm_chat.with_model("openai", "gpt-4o-mini")
         ai_response = await llm_chat.send_message(UserMessage(text=input.content))
         ai_text = ai_response if isinstance(ai_response, str) else str(ai_response)
     except Exception as e:
